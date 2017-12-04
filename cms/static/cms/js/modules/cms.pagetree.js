@@ -24,6 +24,7 @@ var PageTree = new Class({
     options: {
         pasteSelector: '.js-cms-tree-item-paste'
     },
+    touch: false,
     // TODO add mechanics to set the home page
     initialize: function initialize(options) {
         // options are loaded from the pagetree html node
@@ -153,6 +154,9 @@ var PageTree = new Class({
                 // core setting to allow actions
                 // eslint-disable-next-line max-params
                 check_callback: function (operation, node, node_parent, node_position, more) {
+                    if ((operation === 'move_node' || operation === 'copy_node') && more && more.core) {
+                      if (that.touch && !window.confirm('Do you want to move this page?')) return false;
+                    }
                     if ((operation === 'move_node' || operation === 'copy_node') && more && more.pos) {
                         if (more.pos === 'i') {
                             $('#jstree-marker').addClass('jstree-marker-child');
@@ -252,6 +256,10 @@ var PageTree = new Class({
             var node = element.parent();
 
             that._dropdowns.closeAllDropdowns();
+
+            if (data.event.type === 'touchstart' || data.event.type === 'touchmove') {
+              that.touch = true;
+            }
 
             node.addClass('jstree-is-dragging');
             data.data.nodes.forEach(function (nodeId) {
